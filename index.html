@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-Hans">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,9 +8,12 @@
     <link rel="stylesheet" href="./style.css">
     <title>我的导航</title>
 </head>
+
 <body>
     <header>
-
+        <form>
+            <input type="search" class="search" placeholder="Search"><input type="submit" class="submit"  value="百度一下">
+        </form>
     </header>
     <main>
         <div class="wrapper" id="main">
@@ -17,77 +21,158 @@
         </div>
     </main>
     <footer>
-        
+
     </footer>
 
     <script>
-        var keys = {
-            '0': ['1','2','3','4','5','6','7','8','9','0'],
-            '1': ['q','w','e','r','t','y','u','i','o','p'],
-            '2': ['a','s','d','f','g','h','j','k','l'],
-            '3': ['z','x','c','v','b','n','m'],
-            'length': 4
-        }
-        var hash = {
-            'q': 'qq.com',
-            'w': 'weibo.com',
-            'e': 'ele.me',
-            'r': 'renren.com',
-            't': 'tianya.com',
-            'y': 'youtube.com',
-            'u': 'uc.com',
-            'i': 'iqiyi.com',
-            'o': 'opera.com',
-            'p': undefined,
-            'a': 'acfun.tv',
-            's': 'sohu.com',
-            'z': 'zhihu.com',
-            'm': 'mcdonalds.com.cn'
-        }
-        // 取出localstorage中的newhash对应的hash
-        hashInLocalStorage = JSON.parse(localStorage.getItem('newhash') || 'null')
-        if(hashInLocalStorage){
-            hash = hashInLocalStorage
-        }
-       
-        //遍历keys 生成kbd标签
-        index = 0
-        while(index < keys.length){
-            div1 = document.createElement('div')
-            main.appendChild(div1)
-            row = keys[index]
-            index2 = 0
-            while(index2 < row.length){
-                kbd1 = document.createElement('kbd')
-                kbd1.textContent = row[index2]
-                Edit = document.createElement('button')
-                Edit.textContent = '编辑'
-                Edit.id = row[index2]
-                Edit.onclick = function(openweb){
-                    //openweb.target 就是用户点击的元素
-                    key = openweb.target.id  // q w e r t
-                    temp = prompt('给我一个网址')
-                    hash[key] = temp // hash变更
-                    localStorage.setItem('newhash', JSON.stringify(hash))
-                    console.log(hash)
-                }
-                kbd1.appendChild(Edit)
-                div1.appendChild(kbd1)
-                index2 = index2 + 1
+        //header部分
+        let input = document.querySelector('.search')
+        input.addEventListener('keypress', function (e) {
+            //阻止事件冒泡，因为document监听了keypress
+            e.stopPropagation()
+        })
+        var Baidu = document.querySelector('.submit')
+        Baidu.addEventListener('click', function (e) {
+            e.preventDefault()
+            if(input.value !== ''){
+                var url = `http://www.baidu.com/s?wd=${input.value}`
+                window.open(url, '_black')
+            }else{
+                input.focus()
             }
-            index = index + 1
-        }
+            
+        })
+
         
-        document.onkeypress = function (openweb){
-            key = openweb['key']
-            website = hash[key]
+        //main部分
+        // 1.初始化数据
+        var hashA = init()
+        var keys = hashA['keys']
+        var hash = hashA['hash']
+
+
+        // 2. 生成键盘
+        //遍历keys 生成kbd标签
+        for (var index = 0; index < keys.length; index++) {
+            var div = tag('div', { className: 'row' })
+
+            main.appendChild(div)
+
+            var row = keys[index]  //第一、二、三、四个数组
+            for (var index2 = 0; index2 < row.length; index2++) {
+                var span = createSpan(row[index2])
+
+                var EditBtn = createBtn(row[index2])
+
+                var imgicon = createImg(hash[row[index2]])
+
+                var kbd1 = tag('kbd', { className: 'key' })
+
+                kbd1.appendChild(span)
+                kbd1.appendChild(imgicon)
+                kbd1.appendChild(EditBtn)
+
+                div.appendChild(kbd1)
+            }
+        }
+
+
+        // 3.监听键盘
+        document.onkeypress = function (openweb) {
+            var key = openweb['key']
+            var website = hash[key]
             //location.href = "http://www."+website
-            window.open('http://'+website, '_blank')
+            window.open('http://' + website, '_blank')
         }
+
+        // 函数
+        function getFromLocalStorage(name) {
+            return JSON.parse(localStorage.getItem(name) || 'null')
+        }
+        function tag(tagName, attributes) {
+            var element = document.createElement(tagName)
+            for (var key in attributes) {  //key为className, id, textContent
+                element[key] = attributes[key]
+            }
+            return element
+        }
+        function createSpan(textContent) {
+            var span = tag('span', { className: 'text' })
+            span.textContent = row[index2]
+            return span
+        }
+        function createBtn(id) {
+            var EditBtn = tag('button', null)
+            EditBtn.textContent = 'E'
+            EditBtn.id = row[index2]
+            EditBtn.onclick = function (openweb) {  //点击编辑按钮
+                //openweb.target 就是用户点击的元素
+                var EditBtn2 = openweb.target     //点击的按钮的前一个兄弟元素 即图片
+                var imgicon2 = EditBtn2.previousSibling
+                var key = EditBtn2.id  // q w e r t
+                var temp = prompt('给我一个网址')
+                hash[key] = temp // hash变更
+                imgicon2.src = 'http://' + temp + '/favicon.ico'
+                imgicon2.onerror = function (xxx) {
+                    xxx.target.src = '//i.loli.net/2017/11/10/5a05afbc5e183.png'
+                }
+                localStorage.setItem('newhash', JSON.stringify(hash))
+            }
+            return EditBtn
+        }
+        function createImg(domain) {
+            var imgicon = tag('img', null)
+            if (domain) {   // 加网站icon   
+                imgicon.src = 'http://' + domain + '/favicon.ico'
+            }
+            else {
+                imgicon.src = '//i.loli.net/2017/11/10/5a05afbc5e183.png'
+            }
+            imgicon.onerror = function (xxx) {
+                xxx.target.src = '//i.loli.net/2017/11/10/5a05afbc5e183.png'
+            }
+            return imgicon
+        }
+        function init() {
+            var keys = {
+                '0': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+                '1': ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+                '2': ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
+                '3': ['z', 'x', 'c', 'v', 'b', 'n', 'm'],
+                'length': 4
+            }
+            var hash = {
+                '1': '163.com',
+                '6': '10086.cn',
+                'q': 'qq.com',
+                'w': 'weibo.com',
+                'e': 'ele.me',
+                't': 'taobao.com',
+                'u': 'uc.cn',
+                'i': 'iqiyi.com',
+                'o': 'opera.com',
+                'p': undefined,
+                'a': 'acfun.cn',
+                'd': 'dangdang.com',
+                'j': 'www.jd.com',
+                'z': 'zhihu.com',
+                'b': 'bilibili.com',
+                'm': 'meituan.com'
+            }
+            // 取出localstorage中的newhash对应的hash
+            var hashInLocalStorage = getFromLocalStorage('newhash')
+            if (hashInLocalStorage) {
+                hash = hashInLocalStorage
+            }
+            return {
+                "keys": keys,
+                "hash": hash
+            }
+        }
+
         
-
-
     </script>
 
 </body>
+
 </html>
