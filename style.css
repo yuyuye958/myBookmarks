@@ -18,27 +18,27 @@ body {
 header {
   margin-bottom: 60px;
 }
-header form .search {
-  width: 380px;
+header form input{
   height: 36px;
   line-height: 36px;
+  font-size: 14px;
+  vertical-align: top;
+}
+header form .search {
+  width: 380px;
   border-radius: 2px;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
   border: 1px solid rgba(0, 0, 0, 0.15);
   border-right-color: transparent;
   padding-left: 10px;
-  font-size: 14px;
 }
 header form .submit {
   width: 100px;
-  height: 36px;
-  line-height: 36px;
   cursor: pointer;
   color: #fff;
   background-color: rgba(99, 176, 254, 0.9);
   border: none;
-  font-size: 14px;
 }
 kbd {
   text-transform: uppercase;
